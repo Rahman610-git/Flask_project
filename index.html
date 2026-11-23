@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sasta Sawari</title>
+<style>
+  :root { color-scheme: light; --primary: #3a4fa3; --primary-dark: #23326d; --teal: #18a797; --coral: #ed765f; --ink: #19243a; --muted: #69758b; --line: #e4e8f1; --surface: #fff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f6fb; color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px max(16px, calc((100% - 1120px) / 2)); background: #fff; border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-size: 20px; letter-spacing: -.5px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: var(--primary); color: #fff; font-weight: 800; box-shadow: 0 5px 12px #3a4fa333; }
+  .header-location { color: var(--muted); font-size: 13px; }
+  main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); gap: 18px; width: min(1120px, 100%); margin: 22px auto 50px; padding: 0 18px; align-items: start; }
+  section { min-width: 0; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 5px 22px rgba(35, 50, 90, .055); }
+  section.wide { grid-column: 1 / -1; }
+  .hero { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 18px; min-height: 166px; padding: 25px 28px; overflow: hidden; border: 0; background: linear-gradient(116deg, #17234c, #354991 65%, #5369b8); color: #fff; }
+  .hero::after { position: absolute; right: 12%; bottom: -180px; width: 360px; height: 360px; border: 1px solid rgba(255,255,255,.17); border-radius: 50%; box-shadow: 0 0 0 35px rgba(255,255,255,.045), 0 0 0 75px rgba(255,255,255,.035); content: ""; pointer-events: none; }
+  .hero-copy, .hero-note { position: relative; z-index: 1; }
+  .hero-kicker { margin: 0 0 8px; color: #cad7ff; font-size: 11px; font-weight: 800; letter-spacing: 1.3px; }
+  .hero h2 { margin: 0; font-size: clamp(26px, 4vw, 36px); letter-spacing: -1px; }
+  .hero-copy > p:last-child { margin: 8px 0 0; color: #e0e7ff; font-size: 14px; }
+  .hero-note { min-width: 150px; padding: 15px; border: 1px solid rgba(255,255,255,.25); border-radius: 15px; background: rgba(255,255,255,.12); backdrop-filter: blur(6px); }
+  .hero-note strong { display: block; font-size: 22px; }
+  .hero-note span { color: #e0e7ff; font-size: 12px; }
+  h2 { margin: 0 0 16px; font-size: 19px; letter-spacing: -.3px; }
+  h3 { margin: 18px 0 4px; font-size: 16px; }
+  p { line-height: 1.5; }
+  label { display: block; margin: 12px 0 6px; color: #3c4942; font-size: 13px; font-weight: 650; }
+  select, input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #dfe6e2; border-radius: 11px; background: #fff; color: var(--ink); font: inherit; }
+  select:focus, input:focus, button:focus-visible { outline: 3px solid rgba(58, 79, 163, .2); border-color: var(--primary); }
+  button { min-height: 42px; margin: 8px 4px 0 0; padding: 10px 15px; border: 0; border-radius: 11px; background: var(--primary); color: #fff; font: inherit; font-weight: 700; cursor: pointer; transition: filter .15s, transform .15s; }
+  button:hover { filter: brightness(.95); transform: translateY(-1px); }
+  button:disabled { cursor: not-allowed; opacity: .52; transform: none; }
+  button.alt { background: #f0f2f8; color: #37435d; }
+  button.danger { background: #b84444; color: #fff; }
+  .ride-booking { position: sticky; top: 82px; }
+  .ride-booking .wide-button { width: 100%; min-height: 52px; margin: 16px 0 0; font-size: 16px; }
+  .wallet { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding: 14px; border-radius: 13px; background: #f0f3fc; }
+  .wallet strong { font-size: 20px; }
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: #e7f7f4; color: #167e73; font-size: 12px; font-weight: 750; }
+  .status-pill.busy { background: #fff0e8; color: #9c4d17; }
+  .badge { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #edf0f7; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .AVAILABLE, .ACCEPTED, .COMPLETED { background: #e3f6f0; color: #16766c; }
+  .ON_RIDE, .IN_PROGRESS { background: #fff3e3; color: #945822; }
+  .CANCELLED, .REQUESTED { background: #ffeded; color: #a33a3a; }
+  #msg { display: none; grid-column: 1 / -1; margin: 0; padding: 12px 14px; border: 1px solid transparent; border-radius: 12px; font-weight: 600; }
+  #msg.ok { display: block; background: #e7f7f3; border-color: #b8e4dc; color: #176c62; }
+  #msg.err { display: block; background: #fff0ef; border-color: #f2c6c3; color: #982f29; }
+  #map { position: relative; height: 410px; overflow: hidden; border: 1px solid #dce3f0; border-radius: 15px; background: #e9eef8; isolation: isolate; }
+  .map-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .map-markers { position: absolute; inset: 0; }
+  .map-marker { position: absolute; display: flex; align-items: center; gap: 5px; max-width: 150px; padding: 5px 8px 5px 5px; border: 1px solid rgba(24, 53, 38, .12); border-radius: 999px; background: rgba(255,255,255,.96); color: #24352b; box-shadow: 0 3px 12px rgba(24,53,38,.18); font-size: 11px; font-weight: 700; white-space: nowrap; transform: translate(-10%, -50%); }
+  .map-marker:hover, .map-marker.selected { z-index: 2; border-color: var(--primary); }
+  .marker-dot { flex: 0 0 auto; width: 13px; height: 13px; border: 3px solid white; border-radius: 50%; background: #5584ef; box-shadow: 0 0 0 2px #5584ef; }
+  .map-marker.pickup .marker-dot { background: var(--teal); box-shadow: 0 0 0 2px var(--teal); }
+  .map-marker.dropoff .marker-dot { background: var(--coral); box-shadow: 0 0 0 2px var(--coral); }
+  .map-legend { position: absolute; right: 12px; bottom: 12px; display: flex; gap: 12px; padding: 9px 11px; border-radius: 10px; background: rgba(255,255,255,.94); font-size: 11px; box-shadow: 0 2px 8px #31523a22; }
+  .map-legend span { display: flex; align-items: center; gap: 5px; }
+  .map-legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); }
+  .map-legend .drop-dot { background: var(--coral); }
+  .map-controls { display: flex; gap: 8px; margin-bottom: 12px; }
+  .map-controls button { flex: 1; margin: 0; }
+  .map-controls button.active { box-shadow: inset 0 0 0 2px var(--primary-dark); }
+  .muted { color: var(--muted); font-size: 12px; }
+  .student-offer { color: var(--primary); font-weight: 700; }
+  .admin-tools { margin-top: 12px; }
+  .admin-card { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 11px 9px; border-bottom: 1px solid #edf0ee; text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  .table-scroll table { min-width: 760px; }
+  .payment-note { margin: 8px 0; }
+  .ride-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .summary-box { padding: 11px; border-radius: 12px; background: #f5f6fb; }
+  .summary-box small { display: block; margin-bottom: 4px; color: var(--muted); }
+  .summary-box strong { font-size: 14px; }
+  .captain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+  .captain-card { padding: 13px; border: 1px solid var(--line); border-radius: 13px; }
+  .captain-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .captain-card p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+  details > summary { cursor: pointer; font-weight: 750; }
+  footer { padding: 20px 16px 30px; color: #758099; text-align: center; font-size: 12px; letter-spacing: .3px; }
+  @media (max-width: 720px) {
+    header { padding: 12px 16px; }
+    main { grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 12px auto 32px; padding: 0 12px; }
+    section { padding: 16px; border-radius: 16px; }
+    section.wide { grid-column: auto; }
+    .ride-booking { position: static; }
+    .hero { min-height: 145px; padding: 20px; }
+    .hero-note { min-width: 110px; padding: 12px; }
+    .hero-note strong { font-size: 18px; }
+    .hero-note span { font-size: 10px; }
+    #map { height: 360px; }
+    #msg { grid-column: auto; }
+  }
+  @media (max-width: 420px) {
+    header h1 { font-size: 17px; }
+    .header-location { font-size: 11px; }
+    #map { height: 310px; }
+    .map-marker { max-width: 118px; font-size: 9px; }
+    .ride-summary { grid-template-columns: 1fr; }
+    .hero { gap: 8px; padding: 17px; }
+    .hero-note { min-width: 96px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="brand-mark">S</div><h1>Sasta Sawari</h1></div>
+  <div class="header-location">Bike rides in <strong>Quetta</strong></div>
+</header>
+
+<main>
+  <div id="msg" role="status" aria-live="polite"></div>
+  <section class="hero wide">
+    <div class="hero-copy">
+      <p class="hero-kicker">QUETTA · BIKE PICKUP &amp; DROP</p>
+      <h2>Let's get you moving.</h2>
+      <p>Choose your pickup, pick a ride, and see your fare before you book.</p>
+    </div>
+    <div class="hero-note"><strong id="availabilityCount">5 riders</strong><span id="availabilityLabel">Ready for a ride</span></div>
+  </section>
+  <section>
+    <h2>Your rider profile</h2>
+    <label for="rider">Rider</label>
+    <select id="rider" onchange="render()"></select>
+    <div class="wallet"><span>Wallet balance</span><strong id="balance"></strong></div>
+    <div id="riderStatus"></div>
+    <label for="amount">Top-up amount (PKR)</label>
+    <input id="amount" type="number" min="1" step="50" value="500">
+    <button onclick="topup()">Top up wallet</button>
+    <hr>
+    <h3>Student offer · 30% off</h3>
+    <p id="studentStatus" class="student-offer"></p>
+    <label for="studentCard">Upload student card (JPG, PNG, or PDF; max 4 MB)</label>
+    <input id="studentCard" type="file" accept=".jpg,.jpeg,.png,.pdf">
+    <button onclick="uploadStudentCard()">Submit for verification</button>
+    <p class="muted">The 30% discount starts only after admin approval. Demo uploads stay in server memory until review, then are deleted.</p>
+  </section>
+
+  <section class="wide">
+    <h2>Where are you going?</h2>
+    <div class="map-controls">
+      <button id="choosePickup" class="active" onclick="setMapTarget('pickup')">● Set pickup</button>
+      <button id="chooseDropoff" class="alt" onclick="setMapTarget('dropoff')">● Set drop-off</button>
+    </div>
+    <div id="map" aria-label="Schematic map of Quetta and pickup/drop-off hubs"></div>
+    <p class="muted">Tap a location pin to set the active pickup or drop-off. Map shows approximate Quetta hub positions (not live GPS).</p>
+  </section>
+
+  <section class="ride-booking">
+    <h2>Book your ride</h2>
+    <label for="pickup">Pickup location</label>
+    <select id="pickup"></select>
+    <label for="pickupDetails">Full pickup address or landmark</label>
+    <input id="pickupDetails" type="text" maxlength="200" autocomplete="street-address" placeholder="Street, building, gate, or nearby landmark">
+    <label for="dropoff">Drop-off location</label>
+    <select id="dropoff"></select>
+    <label for="dropoffDetails">Full drop-off address or landmark</label>
+    <input id="dropoffDetails" type="text" maxlength="200" autocomplete="street-address" placeholder="Street, building, gate, or nearby landmark">
+    <p class="muted">The map and estimate use the selected area; your exact address helps the captain find you.</p>
+    <label for="service">Choose a ride</label>
+    <select id="service"></select>
+    <div class="ride-summary">
+      <div class="summary-box"><small>Estimated distance</small><strong id="distanceEstimate">Select your route</strong></div>
+      <div class="summary-box"><small>Estimated fare</small><strong id="fareEstimate">Select a ride type</strong></div>
+    </div>
+    <label for="payment">Payment option</label>
+    <select id="payment">
+      <option value="wallet">Rider wallet</option>
+      <option value="easypaisa">Easypaisa</option>
+      <option value="jazzcash">JazzCash</option>
+      <option value="cash_at_location">Cash at pickup location</option>
+    </select>
+    <p id="paymentNote" class="muted payment-note">Mobile wallet choices are demo-only; no real payment is processed.</p>
+    <button id="bookButton" class="wide-button" onclick="book()">Find me a ride</button>
+  </section>
+
+  <section class="wide">
+    <h2>Rides</h2>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>ID</th><th>Rider</th><th>Route</th><th>Fare</th><th>Payment</th><th>Status</th><th>Captain</th><th>Actions</th></tr></thead>
+      <tbody id="rides"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <section class="wide">
+    <h2>Available captains</h2>
+    <div id="captains" class="captain-grid"></div>
+  </section>
+
+  <section class="wide">
+    <details>
+      <summary>Admin: student card review</summary>
+      <div class="admin-tools">
+        <label for="adminKey">Admin key</label>
+        <input id="adminKey" type="password" autocomplete="off">
+        <button onclick="loadStudentApplications()">Load pending cards</button>
+        <p class="muted">Set the SASTA_ADMIN_KEY environment variable on the server. Never use a default key on a public deployment.</p>
+        <div id="studentApplications"></div>
+      </div>
+    </details>
+  </section>
+</main>
+<footer>made by Rehman sakhi</footer>
+
+<script>
+let state = null;
+const el = id => document.getElementById(id);
+let mapTarget = "pickup";
+
+function show(text, isError = false) {
+  const m = el("msg");
+  m.textContent = text;
+  m.className = isError ? "err" : "ok";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[char]);
+}
+
+async function api(path, body) {
+  const opts = { method: body ? "POST" : "GET", headers: { "Content-Type": "application/json" } };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(path, opts);
+    const data = await res.json();
+    if (!res.ok) {
+      show(data.error || "Request failed", true);
+      return false;
+    }
+    if (Array.isArray(data.rides)) {
+      state = data;
+      render();
+    }
+    return data;
+  } catch (error) {
+    show("Could not connect to Sasta Sawari. Start the Flask app and try again.", true);
+    return false;
+  }
+}
+
+function populate() {
+  const riderSelect = el("rider");
+  const selectedRiderId = riderSelect.value || state.riders.find(rider => rider.available)?.id;
+  riderSelect.replaceChildren();
+  state.riders.forEach(rider => {
+    const option = new Option(
+      `${rider.name} · ${rider.available ? "Available" : "On a ride"}`,
+      rider.id
+    );
+    option.disabled = !rider.available;
+    riderSelect.add(option);
+  });
+  if (selectedRiderId && state.riders.some(rider => rider.id === selectedRiderId)) {
+    riderSelect.value = selectedRiderId;
+  }
+  const fillOnce = (id, options) => {
+    const select = el(id);
+    if (select.options.length) return;
+    options.forEach(([value, text]) => select.add(new Option(text, value)));
+  };
+  fillOnce("pickup", state.hubs.map(hub => [hub, hub]));
+  fillOnce("dropoff", state.hubs.map(hub => [hub, hub]));
+  fillOnce("service", state.services.map(service => [service, service]));
+  if (!el("dropoff").dataset.initialized && state.hubs.length > 1) {
+    el("dropoff").value = state.hubs[1];
+    el("dropoff").dataset.initialized = "true";
+  }
+}
+
+function hubPosition(hub) {
+  const x = 70 + (hub.lon - 66.91) / (67.09 - 66.91) * 860;
+  const y = 35 + (30.29 - hub.lat) / (30.29 - 30.10) * 430;
+  return { x, y };
+}
+
+function renderMap() {
+  if (!state || !Array.isArray(state.hub_locations)) return;
+  const map = el("map");
+  const pickup = state.hub_locations.find(hub => hub.name === el("pickup").value);
+  const dropoff = state.hub_locations.find(hub => hub.name === el("dropoff").value);
+  const points = new Map(state.hub_locations.map(hub => [hub.name, hubPosition(hub)]));
+  const labelOffsets = {
+    "Jinnah Road": [8, -12],
+    "Zarghoon Road": [-18, -2],
+    "Sariab Road": [9, 6],
+    "Airport Road": [1, -3],
+    "BUITEMS Takatu": [-16, -3],
+    "Liaquat Bazar": [-20, -12],
+    "Azat Ganji": [-5, -4],
+    "Brewery Road": [14, 3],
+    "Satellite Town": [-8, -13],
+    "Prince Road": [5, 14],
+    "Quetta Railway Station": [-24, 5],
+    "University of Balochistan": [9, -11],
+    "Kandahari Bazar": [-22, 14],
+    "Alamdar Road": [-6, -13],
+  };
+  const route = pickup && dropoff
+    ? `<path d="M ${points.get(pickup.name).x} ${points.get(pickup.name).y} L ${points.get(dropoff.name).x} ${points.get(dropoff.name).y}" fill="none" stroke="#ed765f" stroke-width="7" stroke-linecap="round" stroke-dasharray="3 13"/>`
+    : "";
+  const markers = state.hub_locations.map(hub => {
+    const point = points.get(hub.name);
+    const offset = labelOffsets[hub.name] || [0, 0];
+    const targetClass = hub.name === el("pickup").value
+      ? "pickup"
+      : hub.name === el("dropoff").value ? "dropoff" : "";
+    const currentClass = hub.name === el(mapTarget).value ? "selected" : "";
+    const left = Math.max(12, Math.min(92, point.x / 10 + offset[0]));
+    const top = Math.max(12, Math.min(84, point.y / 5 + offset[1]));
+    return `<button type="button" class="map-marker ${targetClass} ${currentClass}" style="left:${left}%;top:${top}%" aria-label="Set ${escapeHtml(hub.name)} as ${mapTarget}" onclick="selectHub('${escapeHtml(hub.name)}')"><i class="marker-dot"></i>${escapeHtml(hub.name)}</button>`;
+  }).join("");
+  map.innerHTML = `
+    <svg class="map-art" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <pattern id="blocks" width="72" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
+          <rect x="7" y="7" width="45" height="34" rx="8" fill="#dce4f1"/>
+          <rect x="55" y="42" width="12" height="15" rx="4" fill="#dce4f1"/>
+        </pattern>
+      </defs>
+      <rect width="1000" height="500" fill="#edf1f8"/>
+      <rect width="1000" height="500" fill="url(#blocks)" opacity=".78"/>
+      <path d="M-30 435 C160 360 170 275 340 300 S585 380 730 250 880 160 1030 125" fill="none" stroke="#f8fcf8" stroke-width="34"/>
+      <path d="M-30 435 C160 360 170 275 340 300 S585 380 730 250 880 160 1030 125" fill="none" stroke="#d4dfd4" stroke-width="2"/>
+      <path d="M75 -30 C180 90 290 80 385 180 S510 340 600 530 M720 -30 C680 105 785 155 760 280 S700 390 800 530 M-30 160 C160 210 250 145 430 170 S740 225 1030 335" fill="none" stroke="#fff" stroke-width="17"/>
+      <path d="M75 -30 C180 90 290 80 385 180 S510 340 600 530 M720 -30 C680 105 785 155 760 280 S700 390 800 530 M-30 160 C160 210 250 145 430 170 S740 225 1030 335" fill="none" stroke="#d2dbea" stroke-width="2"/>
+      ${route}
+      <text x="35" y="42" fill="#50725c" font-size="17" font-weight="700">QUETTA</text>
+      <text x="845" y="470" fill="#718579" font-size="13">Schematic map</text>
+    </svg>
+    <div class="map-markers">${markers}</div>
+    <div class="map-legend"><span><i></i>Pickup</span><span><i class="drop-dot"></i>Drop-off</span></div>`;
+}
+
+function setMapTarget(target) {
+  mapTarget = target;
+  el("choosePickup").classList.toggle("active", target === "pickup");
+  el("chooseDropoff").classList.toggle("active", target === "dropoff");
+  renderMap();
+}
+
+function selectHub(name, target = mapTarget) {
+  el(target).value = name;
+  updateBookingEstimate();
+  renderMap();
+  show(`${name} selected as ${target === "pickup" ? "pickup" : "drop-off"}.`);
+}
+
+function estimateFare(service, distance) {
+  if (service === "Sasta Saver") return Math.max(60, 50 + 25 * distance);
+  if (service === "Sasta Express") return 90 + 35 * distance;
+  return 120 + 30 * distance;
+}
+
+function updateBookingEstimate() {
+  if (!state || !state.hub_locations) return;
+  const pickup = state.hub_locations.find(hub => hub.name === el("pickup").value);
+  const dropoff = state.hub_locations.find(hub => hub.name === el("dropoff").value);
+  if (!pickup || !dropoff) return;
+  const radians = value => value * Math.PI / 180;
+  const dLat = radians(dropoff.lat - pickup.lat);
+  const dLon = radians(dropoff.lon - pickup.lon);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(radians(pickup.lat)) *
+    Math.cos(radians(dropoff.lat)) * Math.sin(dLon / 2) ** 2;
+  const distance = Math.round(6371 * 2 * Math.asin(Math.sqrt(a)) * 100) / 100;
+  const baseFare = Math.round(estimateFare(el("service").value, distance) * 100) / 100;
+  const rider = state.riders.find(item => item.id === el("rider").value);
+  const discounted = rider && rider.student_verified;
+  const fare = discounted ? Math.round(baseFare * 0.7 * 100) / 100 : baseFare;
+  el("distanceEstimate").textContent = `${distance.toFixed(2)} km`;
+  el("fareEstimate").textContent = discounted
+    ? `Rs ${baseFare.toFixed(2)} → Rs ${fare.toFixed(2)} (student price)`
+    : `Rs ${fare.toFixed(2)}`;
+}
+
+function actions(r) {
+  const btn = (action, label, cls = "") =>
+    `<button class="${cls}" onclick="act('${escapeHtml(r.id)}', '${action}')">${label}</button>`;
+  if (r.status === "REQUESTED") return btn("accept", "Accept") + btn("cancel", "Cancel", "alt");
+  if (r.status === "ACCEPTED") return btn("start", "Start") + btn("cancel", "Cancel", "alt");
+  if (r.status === "IN_PROGRESS") return btn("complete", "Complete");
+  return "-";
+}
+
+function render() {
+  if (!state) return;
+  populate();
+  const availableRiders = state.riders.filter(item => item.available).length;
+  el("availabilityCount").textContent = `${availableRiders} rider${availableRiders === 1 ? "" : "s"}`;
+  el("availabilityLabel").textContent = "Available to book";
+  const rider = state.riders.find(r => r.id === el("rider").value);
+  el("balance").textContent = rider ? `Rs ${rider.balance}` : "";
+  const activeRide = rider && state.rides.find(ride =>
+    ride.rider_id === rider.id && ["REQUESTED", "ACCEPTED", "IN_PROGRESS"].includes(ride.status)
+  );
+  el("riderStatus").innerHTML = rider
+    ? `<span class="status-pill ${rider.available ? "" : "busy"}">${rider.available ? "● Available to book" : "● On a ride — unavailable"}</span>${activeRide ? `<p class="muted">Active ride ${escapeHtml(activeRide.id)} · ${escapeHtml(activeRide.status)}</p>` : ""}`
+    : "";
+  el("bookButton").disabled = !rider || !rider.available;
+  el("bookButton").textContent = rider && !rider.available ? "Rider currently on a ride" : "Find me a ride";
+  el("studentStatus").textContent = rider && rider.student_verified
+    ? "Verified student: 30% off eligible rides."
+    : "Submit your card; 30% off begins after admin approval.";
+  renderMap();
+  updateBookingEstimate();
+
+  el("rides").innerHTML = state.rides.map(r => `
+    <tr>
+      <td>${escapeHtml(r.id)}</td>
+      <td>${escapeHtml(r.rider)}</td>
+      <td>${escapeHtml(r.pickup)}${r.pickup_details ? `<br><small>${escapeHtml(r.pickup_details)}</small>` : ""} to ${escapeHtml(r.dropoff)}${r.dropoff_details ? `<br><small>${escapeHtml(r.dropoff_details)}</small>` : ""}<br><small>${escapeHtml(r.service)}, ${escapeHtml(r.distance_km)} km</small></td>
+      <td>${r.discount_percent ? `<del>Rs ${escapeHtml(r.base_fare)}</del><br>` : ""}Rs ${escapeHtml(r.fare)}${r.discount_percent ? `<br><small>${r.discount_percent}% student discount</small>` : ""}</td>
+      <td>${escapeHtml(({ wallet: "Wallet", easypaisa: "Easypaisa", jazzcash: "JazzCash", cash_at_location: "Cash at pickup" })[r.payment_method] || r.payment_method)}</td>
+      <td><span class="badge ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></td>
+      <td>${escapeHtml(r.captain || "-")}</td>
+      <td>${actions(r)}</td>
+    </tr>`).join("") || `<tr><td colspan="8">No rides yet.</td></tr>`;
+
+  el("captains").innerHTML = state.captains.map(c => `
+    <article class="captain-card">
+      <div class="captain-card-head"><strong>${escapeHtml(c.name)}</strong><span class="badge ${escapeHtml(c.status)}">${c.status === "AVAILABLE" ? "Available" : "On ride"}</span></div>
+      <p>${escapeHtml(c.bike.model)} · ${escapeHtml(c.bike.plate)}</p>
+      <p>★ ${escapeHtml(c.rating)} · ${c.bike.spare_helmet ? "Spare helmet available" : "No spare helmet"} · Rs ${escapeHtml(c.earnings)} earned</p>
+    </article>`).join("");
+}
+
+function topup() {
+  const amount = Number(el("amount").value);
+  if (!Number.isFinite(amount) || amount <= 0) return show("Enter a top-up amount greater than zero.", true);
+  api("/api/wallet/topup", { rider_id: el("rider").value, amount: parseFloat(el("amount").value) })
+    .then(result => result && show("Wallet topped up."));
+}
+
+function book() {
+  const rider = state && state.riders.find(item => item.id === el("rider").value);
+  if (!rider || !rider.available) return show("This rider is already on an active ride. Choose an available rider.", true);
+  if (el("pickup").value === el("dropoff").value) return show("Choose different pickup and drop-off locations.", true);
+  api("/api/rides", {
+    rider_id: el("rider").value,
+    pickup: el("pickup").value,
+    dropoff: el("dropoff").value,
+    service: el("service").value,
+    payment_method: el("payment").value,
+    pickup_details: el("pickupDetails").value,
+    dropoff_details: el("dropoffDetails").value,
+  }).then(result => result && show("Ride requested."));
+}
+
+function act(rideId, action) {
+  api(`/api/rides/${encodeURIComponent(rideId)}/${action}`, {}).then(result => result && show(`Ride ${rideId}: ${action} done.`));
+}
+
+async function uploadStudentCard() {
+  const file = el("studentCard").files[0];
+  if (!file) return show("Choose a student card file first.", true);
+  const form = new FormData();
+  form.append("rider_id", el("rider").value);
+  form.append("student_card", file);
+  try {
+    const res = await fetch("/api/student-cards", { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) return show(data.error || "Student card upload failed.", true);
+    show(data.message);
+    el("studentCard").value = "";
+  } catch (error) {
+    show("Could not upload the student card. Start the Flask app and try again.", true);
+  }
+}
+
+function adminHeaders() {
+  return { "X-Admin-Key": el("adminKey").value };
+}
+
+async function loadStudentApplications() {
+  try {
+    const res = await fetch("/api/admin/student-cards", { headers: adminHeaders() });
+    const data = await res.json();
+    if (!res.ok) return show(data.error || "Could not load student cards.", true);
+    const container = el("studentApplications");
+    container.innerHTML = data.applications.map(application => `
+      <div class="admin-card">
+        <strong>${escapeHtml(application.rider_name)}</strong> — ${escapeHtml(application.filename)}
+        <div>
+          <button onclick="downloadStudentCard('${escapeHtml(application.rider_id)}')">Download card</button>
+          <button onclick="reviewStudentCard('${escapeHtml(application.rider_id)}', true)">Approve</button>
+          <button class="alt" onclick="reviewStudentCard('${escapeHtml(application.rider_id)}', false)">Reject</button>
+        </div>
+      </div>`).join("") || "<p>No student cards are waiting for review.</p>";
+  } catch (error) {
+    show("Could not connect to the admin review endpoint.", true);
+  }
+}
+
+async function downloadStudentCard(riderId) {
+  try {
+    const res = await fetch(`/api/admin/student-cards/${encodeURIComponent(riderId)}/file`, {
+      headers: adminHeaders(),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      return show(data.error || "Could not download the student card.", true);
+    }
+    const url = URL.createObjectURL(await res.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `student-card-${riderId}`;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    show("Could not download the student card.", true);
+  }
+}
+
+async function reviewStudentCard(riderId, approved) {
+  try {
+    const res = await fetch(`/api/admin/student-cards/${encodeURIComponent(riderId)}/review`, {
+      method: "POST",
+      headers: { ...adminHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ approved }),
+    });
+    const data = await res.json();
+    if (!res.ok) return show(data.error || "Could not review the student card.", true);
+    show(data.message);
+    await loadStudentApplications();
+    await api("/api/state");
+  } catch (error) {
+    show("Could not connect to the admin review endpoint.", true);
+  }
+}
+
+["pickup", "dropoff"].forEach(id => {
+  el(id).addEventListener("change", () => {
+    updateBookingEstimate();
+    renderMap();
+  });
+});
+el("service").addEventListener("change", updateBookingEstimate);
+el("payment").addEventListener("change", () => {
+  const paymentHelp = {
+    wallet: "Fare is charged to the selected rider wallet when the ride is completed.",
+    easypaisa: "Demo selection only; no Easypaisa transaction is processed.",
+    jazzcash: "Demo selection only; no JazzCash transaction is processed.",
+    cash_at_location: "Pay the captain in cash at the pickup location.",
+  };
+  el("paymentNote").textContent = paymentHelp[el("payment").value];
+});
+
+api("/api/state");
+setInterval(() => api("/api/state"), 8000);
+</script>
+</body>
+</html>
